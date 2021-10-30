@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view"
+    >
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/listeEleveMenu"
+            android:icon="@drawable/ic_liste_eleve_menu"
+            android:title="Liste Eleve" />
+        <item
+            android:id="@+id/googleMapMenu"
+            android:icon="@drawable/ic_google_map_menu"
+            android:title="Google Map" />
+    </group>
+</menu>

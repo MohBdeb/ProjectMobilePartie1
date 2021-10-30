@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="mohamedBenkhalfa1877541.StudentStacker.application">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.StudentTracker">
+
+        <meta-data android:name="com.google.android.geo.API_KEY"
+            android:value="@string/map_key"/>
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version"/>
+        <activity
+            android:name="mohamedBenkhalfa1877541.StudentStacker.application.StudentMap"
+            android:exported="true"
+            android:label="Map Eleve"
+            android:theme="@style/Theme.StudentTracker.NoActionBar"/>
+        <activity
+            android:name="mohamedBenkhalfa1877541.StudentStacker.application.UpdateStudentInfoForm"
+            android:exported="true"
+            android:parentActivityName="mohamedBenkhalfa1877541.StudentStacker.application.StudentList" />
+        <activity
+            android:name="mohamedBenkhalfa1877541.StudentStacker.application.StudentInfoForm"
+            android:exported="true"
+            android:label="Ajout d&apos;etudiant"
+            android:parentActivityName="mohamedBenkhalfa1877541.StudentStacker.application.StudentList" />
+        <activity
+            android:name="mohamedBenkhalfa1877541.StudentStacker.application.StudentList"
+            android:exported="true"
+            android:label="Liste Eleve"
+            android:theme="@style/Theme.StudentTracker.NoActionBar" />
+        <activity
+            android:name="mohamedBenkhalfa1877541.StudentStacker.application.Login"
+            android:exported="true"
+            android:label="Login"
+            android:theme="@style/Theme.StudentTracker.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

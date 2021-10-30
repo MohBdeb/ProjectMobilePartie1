@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">StudentTracker</string>
+    <string name="side_menu_open">Ouvrire Side Menu</string>
+    <string name="side_menu_close">Fermer Side Menu</string>
+    <string name="map_key">AIzaSyCUqYeNr5M7zLR-yAkSXqXGde_ZzhxD048</string>
+</resources>
