@@ -190,28 +190,24 @@ public class StudentMap extends AppCompatActivity implements NavigationView.OnNa
     le programme redirigera le user afin qu'il donne les acces necessaire pour faire fonctionner l'application
      */
     private void CheckPermission() {
-        Dexter.withContext(this).withPermission(Manifest.permission.ACCESS_FINE_LOCATION).withListener(new PermissionListener() {
-            @Override
-            public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
-                Toast.makeText(StudentMap.this, "Permision Granted", Toast.LENGTH_SHORT).show();
+        if(ActivityCompat.checkSelfPermission(StudentMap.this,
+                Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED){
+            Toast.makeText(StudentMap.this, "Permision Granted", Toast.LENGTH_SHORT).show();
+            isPermissionGranted = true;
+        }else{
+            ActivityCompat.requestPermissions(StudentMap.this
+            ,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},44);
+        }
+    }
+
+    @SuppressLint("MissingSuperCall")
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if(requestCode == 44){
+            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 isPermissionGranted = true;
             }
-
-            @Override
-            public void onPermissionDenied(PermissionDeniedResponse permissionDeniedResponse) {
-                Toast.makeText(StudentMap.this, "Permision Denied", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent();
-                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                Uri uri = Uri.fromParts("package", getPackageName(), "");
-                intent.setData(uri);
-                startActivity(intent);
-            }
-
-            @Override
-            public void onPermissionRationaleShouldBeShown(PermissionRequest permissionRequest, PermissionToken permissionToken) {
-                permissionToken.continuePermissionRequest();
-            }
-        }).check();
+        }
     }
 
     //S'occupe de l'interaction avec les items du menu qui se trouve du cote gauche de l'application
