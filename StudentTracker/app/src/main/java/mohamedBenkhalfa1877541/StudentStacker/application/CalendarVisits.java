@@ -334,11 +334,11 @@ public class CalendarVisits extends AppCompatActivity implements NavigationView.
     creation de visite
     * */
     public void creationEvent(Stage stage, String debutHeureStage) {
-        long heureDebut = 0;
+        long heureDebut = TimeConverter(debutHeureStage);
         long duree = 0;
         //heureDebut = verificationRespectHeure(stage, debutHeureStage);
 
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm");
+        DateFormat dateFormat = new SimpleDateFormat("mm");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         String myDate = stage.getDureeVisite();
         try {
