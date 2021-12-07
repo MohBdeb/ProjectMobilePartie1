@@ -13,5 +13,9 @@
             android:id="@+id/googleMapMenu"
             android:icon="@drawable/ic_google_map_menu"
             android:title="Google Map" />
+        <item
+            android:id="@+id/calendarVisitMenu"
+            android:icon="@drawable/ic_calendar"
+            android:title="Calendrier Visite" />
     </group>
 </menu>

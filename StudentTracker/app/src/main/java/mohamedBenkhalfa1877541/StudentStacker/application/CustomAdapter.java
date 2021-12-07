@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHolder> {
@@ -56,7 +58,12 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
                 intent.putExtra("studentName", String.valueOf(studentName.get(position)));
                 intent.putExtra("entrepriseName", String.valueOf(entrepriseName.get(position)));
                 intent.putExtra("studentStatus", String.valueOf(studentStatuts.get(position)));
-                intent.putExtra("studentPicture",(Bitmap)studentPictures.get(position));
+                Bitmap image = (Bitmap)studentPictures.get(position);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                image.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                byte[] byteArray = stream.toByteArray();
+                String imageStudent = Base64.encodeToString(byteArray, 0);
+                intent.putExtra("studentPicture",String.valueOf(imageStudent));
                 context.startActivity(intent);
             }
         });

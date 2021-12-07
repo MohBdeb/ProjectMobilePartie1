@@ -167,6 +167,7 @@ public class StudentList  extends AppCompatActivity implements NavigationView.On
         nameEntreprise.clear();
         adressEntreprise.clear();
         studentStatuts.clear();
+        studentImage.clear();
         customAdapter.notifyDataSetChanged();
     }
 
@@ -175,7 +176,7 @@ public class StudentList  extends AppCompatActivity implements NavigationView.On
     customAdapter pour creer le recyclerview
      */
     private void StockerDataTableau(){
-        listStage = myDB.readAllData();
+        listStage = myDB.readAllDataStage();
         Collections.sort(listStage, StudentList.StageNameComparator);
         if(listStage.size() > 0){
             for(int i =0;i < listStage.size();i++){
@@ -212,13 +213,18 @@ public class StudentList  extends AppCompatActivity implements NavigationView.On
     //S'occupe du comportement des item dans le menu de l'activite pour les dirigers vers les deux activite (GoogleMap,StudentList)
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Intent intent;
         switch (item.getItemId()){
             case R.id.listeEleveMenu:
                 menu.closeDrawer(GravityCompat.START);
                 break;
-
             case R.id.googleMapMenu:
-                Intent intent = new Intent(StudentList.this, StudentMap.class);
+                intent = new Intent(StudentList.this, StudentMap.class);
+                startActivity(intent);
+                break;
+            case R.id.calendarVisitMenu:
+                intent = new Intent(StudentList.this, CalendarVisits.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 break;
         }

@@ -40,8 +40,7 @@
                 android:id="@+id/studentList"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#FFFFFF"
-                ></androidx.recyclerview.widget.RecyclerView>
+                android:background="#FFFFFF"></androidx.recyclerview.widget.RecyclerView>
         </ScrollView>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton

@@ -2,45 +2,54 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="mohamedBenkhalfa1877541.StudentStacker.application">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
+        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.StudentTracker">
+        android:theme="@style/Theme.StudentTracker"
 
-        <meta-data android:name="com.google.android.geo.API_KEY"
-            android:value="@string/map_key"/>
+        >
+        <activity
+            android:name=".CalendarVisits"
+            android:exported="true"
+            android:label="Calendrier Visite Eleve"
+            android:theme="@style/Theme.StudentTracker.NoActionBar" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/map_key" />
         <meta-data
             android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version"/>
+            android:value="@integer/google_play_services_version" />
+
         <activity
-            android:name="mohamedBenkhalfa1877541.StudentStacker.application.StudentMap"
+            android:name=".StudentMap"
             android:exported="true"
             android:label="Map Eleve"
-            android:theme="@style/Theme.StudentTracker.NoActionBar"/>
+            android:theme="@style/Theme.StudentTracker.NoActionBar" />
         <activity
-            android:name="mohamedBenkhalfa1877541.StudentStacker.application.UpdateStudentInfoForm"
+            android:name=".UpdateStudentInfoForm"
             android:exported="true"
-            android:parentActivityName="mohamedBenkhalfa1877541.StudentStacker.application.StudentList" />
+            android:parentActivityName=".StudentList" />
         <activity
-            android:name="mohamedBenkhalfa1877541.StudentStacker.application.StudentInfoForm"
+            android:name=".StudentInfoForm"
             android:exported="true"
             android:label="Ajout d&apos;etudiant"
-            android:parentActivityName="mohamedBenkhalfa1877541.StudentStacker.application.StudentList" />
+            android:parentActivityName=".StudentList" />
         <activity
-            android:name="mohamedBenkhalfa1877541.StudentStacker.application.StudentList"
+            android:name=".StudentList"
             android:exported="true"
             android:label="Liste Eleve"
             android:theme="@style/Theme.StudentTracker.NoActionBar" />
         <activity
-            android:name="mohamedBenkhalfa1877541.StudentStacker.application.Login"
+            android:name=".Login"
             android:exported="true"
             android:label="Login"
             android:theme="@style/Theme.StudentTracker.NoActionBar">

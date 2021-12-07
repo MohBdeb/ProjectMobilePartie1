@@ -10,8 +10,10 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -33,10 +35,13 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,15 +50,18 @@ public class StudentMap extends AppCompatActivity implements NavigationView.OnNa
 
     private DrawerLayout menu;
     private Toolbar toolbar;
-    DataBaseStudentTracker myDB;
+    private DataBaseStudentTracker myDB;
     private boolean isPermissionGranted = false;
     private GoogleMap mapGoogle;
     private LocationManager locationManager;
     private FusedLocationProviderClient client;
     private static final long MIN_TIME = 400;
     private static final float MIN_DISTANCE = 1000;
+    private FloatingActionButton CalendarView;
     private ImageView GreenPriority, YellowPriority, RedPriority;
-    private Boolean greenActif = true, yellowActif = true, redActif = true;
+    private ArrayList<Stage> listeStage,listeStageTemp = new ArrayList<Stage>();
+    private int active = 0;
+    private Boolean greenActif = true, yellowActif = true, redActif = true,markerSelect;
 
 
     @SuppressLint("MissingPermission")
@@ -67,6 +75,7 @@ public class StudentMap extends AppCompatActivity implements NavigationView.OnNa
         GreenPriority = findViewById(R.id.GreenPriorityGoogleMap);
         YellowPriority = findViewById(R.id.YellowPriorityGoogleMap);
         RedPriority = findViewById(R.id.RedPriorityGoogleMap);
+        CalendarView = findViewById(R.id.CalendarViewButton);
 
         NavigationView navigationView = findViewById(R.id.side_menu_viewer_googlemap);
         navigationView.getMenu().getItem(1).setChecked(true);
@@ -85,6 +94,7 @@ public class StudentMap extends AppCompatActivity implements NavigationView.OnNa
             client = LocationServices.getFusedLocationProviderClient(this);
         }
 
+
         /*Gere le fonctionnement pour les marqueurs selon leur priorite. Dependant des priorite choisi par le user
         les marqueurs seront sois cache ou remis sur la carte afin de les afficher.
          */
@@ -99,6 +109,7 @@ public class StudentMap extends AppCompatActivity implements NavigationView.OnNa
                     greenActif = false;
                     active++;
                     mapGoogle.clear();
+                    listeStageTemp.clear();
                     try {
                         CreateStageMarkers();
                     } catch (IOException e) {
@@ -120,7 +131,6 @@ public class StudentMap extends AppCompatActivity implements NavigationView.OnNa
 
         YellowPriority.setOnClickListener(new View.OnClickListener() {
             int active = 0;
-
             @Override
             public void onClick(View view) {
                 if (active == 0) {
@@ -129,6 +139,7 @@ public class StudentMap extends AppCompatActivity implements NavigationView.OnNa
                     yellowActif = false;
                     active++;
                     mapGoogle.clear();
+                    listeStageTemp.clear();
                     try {
                         CreateStageMarkers();
                     } catch (IOException e) {
@@ -150,7 +161,6 @@ public class StudentMap extends AppCompatActivity implements NavigationView.OnNa
 
         RedPriority.setOnClickListener(new View.OnClickListener() {
             int active = 0;
-
             @Override
             public void onClick(View view) {
                 if (active == 0) {
@@ -159,6 +169,7 @@ public class StudentMap extends AppCompatActivity implements NavigationView.OnNa
                     redActif = false;
                     active++;
                     mapGoogle.clear();
+                    listeStageTemp.clear();
                     try {
                         CreateStageMarkers();
                     } catch (IOException e) {
@@ -177,27 +188,93 @@ public class StudentMap extends AppCompatActivity implements NavigationView.OnNa
                 }
             }
         });
+
+
+        CalendarView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(StudentMap.this, CalendarVisits.class);
+                for (int i = 0; i < listeStageTemp.size(); i++) {
+                    intent.putExtra("studentName "+i,listeStageTemp.get(i).getEtudiantName());
+                }
+                intent.putExtra("taille", (int)listeStageTemp.size());
+                startActivity(intent);
+            }
+        });
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_map, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if(id == R.id.SelectStage){
+            if(active == 0){
+                markerSelect = true;
+                active++;
+            }else{
+                markerSelect = false;
+                active = 0;
+            }
+            Toast.makeText(StudentMap.this, "Selection Activé", Toast.LENGTH_SHORT).show();
+            if(markerSelect){
+                mapGoogle.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(@NonNull Marker marker) {
+                        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                        for (int i = 0; i < listeStage.size(); i++) {
+                            if(marker.getTitle().equals(listeStage.get(i).getEtudiantName())){
+                                listeStageTemp.add(listeStage.get(i));
+                            }
+                        }
+                        Toast.makeText(StudentMap.this, marker.getTitle(), Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+                });
+            }else{
+                mapGoogle.clear();
+                try {
+                    CreateStageMarkers();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                mapGoogle.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(@NonNull Marker marker) {
+                        return false;
+                    }
+                });
+                Toast.makeText(StudentMap.this, "Selection Désactivé", Toast.LENGTH_SHORT).show();
+            }
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     /*Verifie si l'utilisateur a les permissions necessaire pour faire fonctionner la map. si ce n'est pas le cas
-    le programme redirigera le user afin qu'il donne les acces necessaire pour faire fonctionner l'application
-     */
+        le programme redirigera le user afin qu'il donne les acces necessaire pour faire fonctionner l'application
+         */
     private void CheckPermission() {
-        if(ActivityCompat.checkSelfPermission(StudentMap.this,
-                Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED){
+        if (ActivityCompat.checkSelfPermission(StudentMap.this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(StudentMap.this, "Permision Granted", Toast.LENGTH_SHORT).show();
             isPermissionGranted = true;
-        }else{
+        } else {
             ActivityCompat.requestPermissions(StudentMap.this
-            ,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},44);
+                    , new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 44);
         }
     }
 
     @SuppressLint("MissingSuperCall")
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if(requestCode == 44){
-            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+        if (requestCode == 44) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 isPermissionGranted = true;
             }
         }
@@ -206,15 +283,18 @@ public class StudentMap extends AppCompatActivity implements NavigationView.OnNa
     //S'occupe de l'interaction avec les items du menu qui se trouve du cote gauche de l'application
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Intent intent;
         switch (item.getItemId()) {
             case R.id.listeEleveMenu:
-                Intent intent = new Intent(StudentMap.this, StudentList.class);
+                intent = new Intent(StudentMap.this, StudentList.class);
                 startActivity(intent);
-
                 break;
-
             case R.id.googleMapMenu:
                 menu.closeDrawer(GravityCompat.START);
+                break;
+            case R.id.calendarVisitMenu:
+                intent = new Intent(StudentMap.this, CalendarVisits.class);
+                startActivity(intent);
                 break;
         }
         menu.closeDrawer(GravityCompat.START);
@@ -233,6 +313,7 @@ public class StudentMap extends AppCompatActivity implements NavigationView.OnNa
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
 
@@ -240,16 +321,18 @@ public class StudentMap extends AppCompatActivity implements NavigationView.OnNa
     s'occupe aussi de gerer la logique pour afficher les differentes priorite selon celle que l'utilisateur veut afficher
      */
     public void CreateStageMarkers() throws IOException {
-
-        ArrayList<Stage> listStage = myDB.readAllData();
-        if (listStage.size() > 0) {
-            for (int i = 0; i < listStage.size(); i++) {
-                if (greenActif && listStage.get(i).getPriorite().equals("#00BA19")) {
-                    stageToMarker(listStage.get(i));
-                } else if (yellowActif && listStage.get(i).getPriorite().equals("#EFDB27")) {
-                    stageToMarker(listStage.get(i));
-                } else if (redActif && listStage.get(i).getPriorite().equals("#FFF44336")) {
-                    stageToMarker(listStage.get(i));
+        listeStage = myDB.readAllDataStage();
+        if(!(listeStageTemp.isEmpty())) {
+            listeStageTemp.clear();
+        }
+        if (listeStage.size() > 0) {
+            for (int i = 0; i < listeStage.size(); i++) {
+                if (greenActif && listeStage.get(i).getPriorite().equals("#00BA19")) {
+                    stageToMarker(listeStage.get(i));
+                } else if (yellowActif && listeStage.get(i).getPriorite().equals("#EFDB27")) {
+                    stageToMarker(listeStage.get(i));
+                } else if (redActif && listeStage.get(i).getPriorite().equals("#FFF44336")) {
+                    stageToMarker(listeStage.get(i));
                 }
             }
 
@@ -271,7 +354,7 @@ public class StudentMap extends AppCompatActivity implements NavigationView.OnNa
         List<Address> address;
         LatLng p1 = null;
         try {
-            address = coder.getFromLocationName(strAddress, 5);
+            address = coder.getFromLocationName(strAddress, 3);
             address.size();
             if (address == null) {
                 return null;

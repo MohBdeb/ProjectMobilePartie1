@@ -39,6 +39,7 @@ public class DataBaseStudentTracker extends SQLiteOpenHelper {
         String queryTableCompte = "CREATE TABLE compte (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
                 "created_at DATETIME, " +
                 "deleted_at DATETIME, " +
+                "disponibilite VARCHAR(255), " +
                 "email VARCHAR(255), " +
                 "est_actif BIT(1), " +
                 "mot_passe VARCHAR(255), " +
@@ -48,7 +49,9 @@ public class DataBaseStudentTracker extends SQLiteOpenHelper {
                 "updated_at DATETIME, " +
                 "type_compte INT(11));";
 
-        String queryTableStage = "CREATE TABLE stage (id VARCHAR PRIMARY KEY, annee_scolaire VARCHAR(255), priorite VARCHAR(255), entreprise_id INTEGER, etudiant_id INTEGER, professeur_id INTEGER," +
+        String queryTableStage = "CREATE TABLE stage (id VARCHAR PRIMARY KEY, annee_scolaire VARCHAR(255), priorite VARCHAR(255), entreprise_id INTEGER, etudiant_id INTEGER," +
+                " professeur_id INTEGER, heure_stage_debut DATETIME, heure_stage_fin DATETIME, heure_pause_debut DATETIME, heure_pause_fin DATETIME, " +
+                "duree_visite DATETIME,journee VARCHAR(255), commentaire_stage VARCHAR(255), " +
                 "FOREIGN KEY (entreprise_id) REFERENCES entreprise (id), " +
                 "FOREIGN KEY (etudiant_id) REFERENCES compte (id), " +
                 "FOREIGN KEY (professeur_id) REFERENCES compte (id));";
@@ -57,7 +60,6 @@ public class DataBaseStudentTracker extends SQLiteOpenHelper {
                 "date DATE, " +
                 "heure_debut TIME, " +
                 "duree INT(20), FOREIGN KEY (stage_id) REFERENCES stage(id));";
-
         Database.execSQL(queryTableEntreprise);
         Database.execSQL(queryTableCompte);
         Database.execSQL(queryTableStage);
@@ -91,7 +93,7 @@ public class DataBaseStudentTracker extends SQLiteOpenHelper {
     public void addStudentImage(String studentName, Bitmap image){
         SQLiteDatabase db = this.getWritableDatabase();
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        image.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        image.compress(Bitmap.CompressFormat.JPEG, 75, stream);
         byte[] byteArray = stream.toByteArray();
         String imageStudent = Base64.encodeToString(byteArray, 0);
         String updateStageQuery = "UPDATE compte SET photo = '"+imageStudent+"' WHERE nom='"+studentName.split(" ")[0]+"'";
@@ -117,22 +119,41 @@ public class DataBaseStudentTracker extends SQLiteOpenHelper {
         db.insert("compte",null, data);
     }
 
+    /*Cette methode s'occupe de rajouter une visite avec les valeur passe en parametre comme le nom, la date, l'heure de debut et ca duree
+     */
+    public void addVisite(String nom, String date, String heure_debut, String duree){
+        SQLiteDatabase db = this.getWritableDatabase();
+        String getNameEtudiant = "SELECT id FROM compte WHERE nom='"+nom.split(" ")[0]+"'";
+        Cursor cursor = db.rawQuery(getNameEtudiant,null);
+        cursor.moveToFirst();
+        int etudiant_id = cursor.getInt(0);
+        cursor.close();
+        String uuid = UUID.randomUUID().toString().replace("-", "");
+        String addStageQuery = "INSERT INTO visite (id,stage_id, nom, date, heure_debut, duree)" +
+                "VALUES('"+uuid+"',(SELECT id FROM stage WHERE etudiant_id='"+etudiant_id+"')," +
+                "'"+nom+"','"+date+"','"+heure_debut+"','"+duree+"');";
+        db.execSQL(addStageQuery);
+    }
+
     /*Cette methode s'occupe de rajouter un stage avec les valeur passe en parametre comme le nom le nom de l'entreprise et ca priorite
      */
-    public void addStage(String StudentName,String entreprise,String priorite){
-        String idStudentQuery = "SELECT id FROM compte WHERE nom='"+StudentName.split(" ")+"'";
+    public void addStage(String StudentName,String entreprise,String priorite,String commentaire,String journee,String dureeVisite,
+    String heureStageDebut, String heureStageFin, String heurePauseDebut, String heurePauseFin){
         SQLiteDatabase db = this.getWritableDatabase();
         String uuid = UUID.randomUUID().toString().replace("-", "");
-        String addStageQuery = "INSERT INTO stage (etudiant_id, entreprise_id,id,priorite) " +
+        String addStageQuery = "INSERT INTO stage (etudiant_id, entreprise_id,id, priorite, commentaire_stage,journee, duree_visite, " +
+                "heure_stage_debut, heure_stage_fin, heure_pause_debut, heure_pause_fin) " +
                 "VALUES((SELECT id from compte WHERE nom='"+StudentName.split(" ")[0]+"')," +
-                "(SELECT id from entreprise WHERE nom='"+entreprise+"'),'"+uuid+"' , '"+priorite+"');";
+                "(SELECT id from entreprise WHERE nom='"+entreprise+"'),'"+uuid+"' , '"+priorite+"','"+commentaire+"','"+journee+"','"+dureeVisite+"'" +
+                ",'"+heureStageDebut+"','"+heureStageFin+"','"+heurePauseDebut+"','"+heurePauseFin+"');";
         db.execSQL(addStageQuery);
     }
 
     /*Cette methode s'occupe de mettre a jour le stage que l'etudiant a choisi. Il prend en parametre
     le nom de l'etudiant, le nom de l'entreprise ainsi que la priorite du stage
      */
-    public void updateStage(String etudiant_name,String entreprise_name,String priorite){
+    public void updateStage(String etudiant_name,String entreprise_name,String priorite,String commentaire,String journee,String dureeVisite,
+                            String heureStageDebut, String heureStageFin, String heurePauseDebut, String heurePauseFin){
         SQLiteDatabase db = this.getReadableDatabase();
         String getIdEntreprise = "SELECT id FROM entreprise WHERE nom='"+entreprise_name+"'";
         Cursor cursor = db.rawQuery(getIdEntreprise,null);
@@ -145,7 +166,9 @@ public class DataBaseStudentTracker extends SQLiteOpenHelper {
         int etudiant_id = cursor.getInt(0);
 
         db = this.getWritableDatabase();
-        String updateStageQuery = "UPDATE stage SET entreprise_id = '"+entreprise_id+"',priorite = '"+priorite+"' WHERE etudiant_id = '"+etudiant_id+"';";
+        String updateStageQuery = "UPDATE stage SET entreprise_id = '"+entreprise_id+"',priorite = '"+priorite+"',commentaire_stage = '"+commentaire+"',journee = '"+journee+"'" +
+                ",duree_visite = '"+dureeVisite+"',heure_stage_debut = '"+heureStageDebut+"',heure_stage_fin = '"+heureStageFin+"'" +
+                ",heure_pause_debut = '"+heurePauseDebut+"',heure_pause_fin = '"+heurePauseFin+"' WHERE etudiant_id = '"+etudiant_id+"';";
         db.execSQL(updateStageQuery);
     }
 
@@ -158,6 +181,7 @@ public class DataBaseStudentTracker extends SQLiteOpenHelper {
         cursor.moveToFirst();
         return cursor;
     }
+
     //Retourne un ArrayList contenant le nom de toutes les etudiants
     public ArrayList<String> getStudentNames(){
         ArrayList<String> listStudentNames = new ArrayList<String>();
@@ -169,7 +193,7 @@ public class DataBaseStudentTracker extends SQLiteOpenHelper {
         for(int i=0 ; i < cursor.getCount(); i++) {
             if(db != null){
                 if(cursor.moveToNext())
-                    listStudentNames.add(cursor.getString(6)+" "+cursor.getString(7));
+                    listStudentNames.add(cursor.getString(7)+" "+cursor.getString(8));
             }
         }
         cursor.close();
@@ -194,11 +218,35 @@ public class DataBaseStudentTracker extends SQLiteOpenHelper {
         return listEntrepriseNames;
     }
 
+    /*Cette methode s'occupe de lire la table visite et retourne un array de Visite*/
+    ArrayList<Visite> readAllDataVisite(){
+        ArrayList<Visite> tabInfo = new ArrayList<Visite>();
+        Cursor cursorVisite = null;
+        SQLiteDatabase db = this.getReadableDatabase();
+        String visiteQuery = "SELECT * FROM visite";
+        cursorVisite = db.rawQuery(visiteQuery,null);
+        if(cursorVisite != null){
+            for (int i=0 ; i<cursorVisite.getCount();i++){
+                if (cursorVisite.moveToNext()) {
+                    Visite visite = new Visite();
+                    visite.setNom(cursorVisite.getString(1));
+                    visite.setStade_id(cursorVisite.getString(2));
+                    visite.setDate(cursorVisite.getString(3));
+                    visite.setHeure_debut(cursorVisite.getString(4));
+                    visite.setDuree(cursorVisite.getString(5));
+                    tabInfo.add(visite);
+                }
+            }
+        }
+        cursorVisite.close();
+        return tabInfo;
+    }
+
     /*Cette methode s'occupe de lire toutes la table de stage et de les retourner dans un Array de Arrayliste contenant
     le nom de l'etudiant, le nom de l'entreprise de son stage, l'addresse de l'entreprise de son stage ainsi que la priorite de
     celui-ci
      */
-    ArrayList<Stage> readAllData(){
+    ArrayList<Stage> readAllDataStage(){
         ArrayList<Stage> tabInfo = new ArrayList<Stage>();
         Cursor cursorStage = null;
         Cursor cursorInfoStudent = null;
@@ -220,7 +268,15 @@ public class DataBaseStudentTracker extends SQLiteOpenHelper {
                     stage.setEtudiantName(cursorInfoStudent.getString(0)+" "+cursorInfoStudent.getString(1));
                     stage.setEntrepriseName(cursorInfoEntreprise.getString(0));
                     stage.setEntrepriseAdresse(cursorInfoEntreprise.getString(1));
+                    stage.setId(cursorStage.getString(0));
                     stage.setPriorite(cursorStage.getString(2));
+                    stage.setHeureStageDebut(cursorStage.getString(6));
+                    stage.setHeureStageFin(cursorStage.getString(7));
+                    stage.setHeurePauseDebut(cursorStage.getString(8));
+                    stage.setHeurePauseFin(cursorStage.getString(9));
+                    stage.setDureeVisite(cursorStage.getString(10));
+                    stage.setJournee(cursorStage.getString(11));
+                    stage.setCommentaire(cursorStage.getString(12));
                     String imageBlob = new String( cursorInfoStudent.getBlob(2));
                     byte[] byteArray = Base64.decode(imageBlob, Base64.DEFAULT);
                     Bitmap imageStudent =  BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
